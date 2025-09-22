@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Antenas y Propagación</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .question-container {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+        }
+        
+        .question-container:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .question {
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .option {
+            margin: 10px 0;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .option:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateX(5px);
+        }
+        
+        .option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #5a6fd8;
+        }
+        
+        .option.correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #45a049;
+        }
+        
+        .option.incorrect {
+            background: #f44336;
+            color: white;
+            border-color: #da190b;
+        }
+        
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .progress {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+        
+        .score {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0;
+        }
+        
+        .reset-btn {
+            display: block;
+            margin: 30px auto;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📡 Quiz de Antenas y Propagación</h1>
+        
+        <div class="score">
+            Puntuación: <span id="score">0</span> / <span id="total">0</span>
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        
+        <div id="quiz-container"></div>
+        
+        <button class="reset-btn" onclick="resetQuiz()">🔄 Reiniciar Quiz</button>
+    </div>
+
+    <script>
+        const questions = [
+            // Preguntas únicas del PDF 1
+            {
+                question: "El efecto de los hidrometeoros (lluvia, niebla) en propagación incluye:",
+                options: [
+                    "a. Aumento de la impedancia",
+                    "b. Reducción de la frecuencia crítica",
+                    "c. Atenuación y despolarización",
+                    "d. Mejora de la reflexión ionosférica"
+                ],
+                correct: 2
+            },
+            {
+                question: "La permitividad compleja de un medio incluye contribuciones de:",
+                options: [
+                    "a. Polarización y reflexión",
+                    "b. Inductancia y capacitancia",
+                    "c. Permeabilidad y resistividad",
+                    "d. Conductividad y permitividad"
+                ],
+                correct: 3
+            },
+            {
+                question: "En propagación por onda de superficie, para distancias grandes (d≫λ), el campo eléctrico decae como:",
+                options: [
+                    "a. Exponencialmente",
+                    "b. 1/d",
+                    "c. 1/d",
+                    "d. 1/d²"
+                ],
+                correct: 3
+            },
+            {
+                question: "Para un transmisor de AM, las interferencias nocturnas son causadas por:",
+                options: [
+                    "a. Onda ionosférica",
+                    "b. Dispersión troposférica",
+                    "c. Ruido térmico",
+                    "d. Reflexiones en edificios"
+                ],
+                correct: 0
+            },
+            {
+                question: "La permitividad relativa (εr) del agua de mar es aproximadamente:",
+                options: [
+                    "a. 1",
+                    "b. 15",
+                    "c. 4",
+                    "d. 80"
+                ],
+                correct: 3
+            },
+            {
+                question: "El factor de divergencia en reflexión sobre tierra esférica:",
+                options: [
+                    "a. Depende solo de la frecuencia",
+                    "b. Reduce la amplitud de la onda reflejada",
+                    "c. No afecta la fase",
+                    "d. Aumenta la amplitud de la onda reflejada"
+                ],
+                correct: 1
+            },
+            {
+                question: "En el modelo de tierra plana, el campo eléctrico total en el receptor es la suma de:",
+                options: [
+                    "a. Onda difractada y refractada",
+                    "b. Onda directa y refractada",
+                    "c. Onda directa y reflejada",
+                    "d. Onda superficial y espacial"
+                ],
+                correct: 2
+            },
+            {
+                question: "La dispersión troposférica permite enlaces:",
+                options: [
+                    "a. Espaciales a la Luna",
+                    "b. Ionosféricos",
+                    "c. Transhorizonte en UHF",
+                    "d. Submarinos"
+                ],
+                correct: 2
+            },
+            {
+                question: "La propagación por onda espacial (VHF+) requiere típicamente:",
+                options: [
+                    "a. Reflexión en la ionosfera",
+                    "b. Frecuencias <30 MHz",
+                    "c. Guiado por capas D/E",
+                    "d. Visión directa (LOS)"
+                ],
+                correct: 3
+            },
+            {
+                question: "La capa atmosférica donde ocurren los fenómenos meteorológicos (nubes, lluvia) es:",
+                options: [
+                    "a. Estratosfera",
+                    "b. Troposfera",
+                    "c. Mesosfera",
+                    "d. Ionosfera"
+                ],
+                correct: 1
+            },
+            {
+                question: "La atenuación por difracción en un filo de cuchillo es mínima cuando:",
+                options: [
+                    "a. h=0 (sin obstáculo)",
+                    "b. h<0 (obstáculo por debajo de la línea de visión)",
+                    "c. h>r1 (obstáculo alto)",
+                    "d. h=r1"
+                ],
+                correct: 1
+            },
+            {
+                question: "Para un suelo dieléctrico, predomina:",
+                options: [
+                    "a. Corriente de conducción",
+                    "b. Conductividad infinita",
+                    "c. Reflexión total",
+                    "d. Corriente de desplazamiento"
+                ],
+                correct: 3
+            },
+            {
+                question: "Las pérdidas en espacio libre (dB) se calculan con:",
+                options: [
+                    "a. Lp=Pt/Pr",
+                    "b. Lp=λ/4πd",
+                    "c. Lp=32.5+20log(f)+20log(d)",
+                    "d. Lp=20log(4πd/λ)"
+                ],
+                correct: 2
+            },
+            {
+                question: "La fórmula de la densidad de potencia en espacio libre es:",
+                options: [
+                    "a. P=H⋅Zs",
+                    "b. P=PtGt/4πd²",
+                    "c. P=Pt/4πd²",
+                    "d. P=E²/Zs"
+                ],
+                correct: 1
+            },
+            {
+                question: "La refracción en la troposfera curva los rayos debido a:",
+                options: [
+                    "a. Reflexión en capas",
+                    "b. Absorción molecular",
+                    "c. Dispersión por hidrometeoros",
+                    "d. Variación del índice de refracción"
+                ],
+                correct: 3
+            },
+            {
+                question: "En la ecuación E=30√(PtGt)/r, las unidades de E son:",
+                options: [
+                    "a. A/m",
+                    "b. dBμ",
+                    "c. V/m",
+                    "d. W/m²"
+                ],
+                correct: 2
+            },
+            {
+                question: "La densidad de potencia P (W/m²) de una onda electromagnética se relaciona con los campos E y H mediante:",
+                options: [
+                    "a. P=E+H",
+                    "b. P=E⋅H",
+                    "c. P=E/H",
+                    "d. P=EZs"
+                ],
+                correct: 1
+            },
+            {
+                question: "La intensidad de campo eléctrico en espacio libre para una antena isotrópica es proporcional a:",
+                options: [
+                    "a. √Pt/r",
+                    "b. 1/r",
+                    "c. 1/r²",
+                    "d. Pt⋅r"
+                ],
+                correct: 0
+            },
+            {
+                question: "En comunicaciones móviles urbanas, el mecanismo dominante es:",
+                options: [
+                    "a. Onda directa exclusiva",
+                    "b. Propagación ionosférica",
+                    "c. Onda de superficie",
+                    "d. Reflexiones y difracciones múltiples"
+                ],
+                correct: 3
+            },
+            {
+                question: "En propagación, la onda ionosférica es efectiva en el rango de frecuencias:",
+                options: [
+                    "a. <3 kHz",
+                    "b. 30-300 MHz",
+                    "c. 3-30 MHz",
+                    "d. >300 MHz"
+                ],
+                correct: 2
+            },
+            {
+                question: "En la difracción por filo de cuchillo, el parámetro v se relaciona con:",
+                options: [
+                    "a. Ángulo de incidencia",
+                    "b. Altura normalizada del obstáculo",
+                    "c. Distancia entre antenas",
+                    "d. Longitud de onda"
+                ],
+                correct: 1
+            },
+            {
+                question: "Las interferencias por onda ionosférica en MF/HF son más intensas:",
+                options: [
+                    "a. Al mediodía",
+                    "b. En invierno",
+                    "c. Durante la noche",
+                    "d. Con alta humedad"
+                ],
+                correct: 2
+            },
+            {
+                question: "La capa de la atmósfera con temperatura de hasta 1000°C es:",
+                options: [
+                    "a. Estratosfera",
+                    "b. Ionosfera",
+                    "c. Troposfera",
+                    "d. Mesosfera"
+                ],
+                correct: 1
+            },
+            {
+                question: "En comunicaciones vía satélite, la propagación es principalmente:",
+                options: [
+                    "a. Onda espacial",
+                    "b. Guiada por tierra",
+                    "c. Onda ionosférica",
+                    "d. Onda de superficie"
+                ],
+                correct: 0
+            },
+            {
+                question: "Cuando una onda incide oblicuamente en la superficie de separación de dos medios con índices de refracción distintos, el fenómeno que permite su penetración en el segundo medio es:",
+                options: [
+                    "a. Difracción",
+                    "b. Reflexión",
+                    "c. Refracción",
+                    "d. Dispersión"
+                ],
+                correct: 2
+            },
+            {
+                question: "Según la Ley de Snell, si n1sinθ1=n2sinθ2 y n1>n2, ¿qué ocurre con θ2 respecto a θ1?",
+                options: [
+                    "a. θ2=90°",
+                    "b. θ2<θ1",
+                    "c. θ2=θ1",
+                    "d. θ2>θ1"
+                ],
+                correct: 3
+            },
+            {
+                question: "En el modelo de tierra plana, si hT=hR=20λ y d=100λ, las pérdidas respecto al espacio libre son:",
+                options: [
+                    "a. -20 dB",
+                    "b. -6 dB",
+                    "c. +10 dB",
+                    "d. ≈0 dB"
+                ],
+                correct: 3
+            },
+            {
+                question: "La difracción de ondas se caracteriza por:",
+                options: [
+                    "a. Cambio de dirección al reflejarse en una superficie",
+                    "b. Desviación al pasar por una abertura o cerca de un obstáculo",
+                    "c. Cambio de velocidad en medios distintos",
+                    "d. Absorción por la atmósfera"
+                ],
+                correct: 1
+            },
+            {
+                question: "El alcance de la onda de tierra en MF (300 kHz-3 MHz) es típicamente:",
+                options: [
+                    "a. >5000 km",
+                    "b. <10 km",
+                    "c. 10-50 km",
+                    "d. 100-1000 km"
+                ],
+                correct: 3
+            },
+            {
+                question: "El coeficiente de reflexión para polarización horizontal en incidencia rasante (ψ≈0°) es:",
+                options: [
+                    "a. 0.5",
+                    "b. -1",
+                    "c. 1",
+                    "d. 0"
+                ],
+                correct: 1
+            },
+            // Preguntas únicas del PDF 2
+            {
+                question: "Para un suelo con alta conductividad (σ), predominará:",
+                options: [
+                    "a. Corriente de desplazamiento",
+                    "b. Permitividad relativa",
+                    "c. Corriente de conducción",
+                    "d. Reflexión nula"
+                ],
+                correct: 2
+            },
+            {
+                question: "El principio de Huygens explica la propagación mediante:",
+                options: [
+                    "a. Leyes de reflexión",
+                    "b. Difracción en bordes",
+                    "c. Fuentes secundarias de onda",
+                    "d. Absorción atmosférica"
+                ],
+                correct: 2
+            },
+            {
+                question: "La onda guiada tierra-ionosfera es aplicable en:",
+                options: [
+                    "a. Microondas",
+                    "b. VLF (3-30 kHz)",
+                    "c. UHF (>300 MHz)",
+                    "d. HF (3-30 MHz)"
+                ],
+                correct: 1
+            },
+            {
+                question: "La frecuencia crítica para reflexión ionosférica depende de:",
+                options: [
+                    "a. Altura de la estratosfera",
+                    "b. Conductividad del suelo",
+                    "c. Densidad electrónica de la ionosfera",
+                    "d. Humedad troposférica"
+                ],
+                correct: 2
+            },
+            {
+                question: "El ángulo crítico para reflexión interna total se define cuando:",
+                options: [
+                    "a. θincidencia=0°",
+                    "b. θrefracción=0°",
+                    "c. θrefracción=90°",
+                    "d. θincidencia=45°"
+                ],
+                correct: 2
+            }
+        ];
+
+        let currentAnswers = new Array(questions.length).fill(-1);
+        let score = 0;
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+            
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-container';
+                questionDiv.innerHTML = `
+                    <div class="question">${index + 1}. ${q.question}</div>
+                    <ul class="options">
+                        ${q.options.map((option, optIndex) => `
+                            <li class="option" onclick="selectOption(${index}, ${optIndex})" 
+                                id="q${index}_opt${optIndex}">
+                                ${option}
+                            </li>
+                        `).join('')}
+                    </ul>
+                    <div class="feedback" id="feedback${index}"></div>
+                `;
+                container.appendChild(questionDiv);
+            });
+            
+            document.getElementById('total').textContent = questions.length;
+        }
+
+        function selectOption(questionIndex, optionIndex) {
+            if (currentAnswers[questionIndex] !== -1) return; // Ya respondida
+            
+            currentAnswers[questionIndex] = optionIndex;
+            const question = questions[questionIndex];
+            const isCorrect = optionIndex === question.correct;
+            
+            // Marcar la opción seleccionada
+            const selectedOption = document.getElementById(`q${questionIndex}_opt${optionIndex}`);
+            selectedOption.classList.add('selected');
+            
+            // Mostrar la respuesta correcta
+            const correctOption = document.getElementById(`q${questionIndex}_opt${question.correct}`);
+            correctOption.classList.add('correct');
+            
+            // Si es incorrecta, marcar como tal
+            if (!isCorrect) {
+                selectedOption.classList.add('incorrect');
+            }
+            
+            // Deshabilitar todas las opciones de esta pregunta
+            for (let i = 0; i < question.options.length; i++) {
+                const opt = document.getElementById(`q${questionIndex}_opt${i}`);
+                opt.style.pointerEvents = 'none';
+            }
+            
+            // Mostrar feedback
+            const feedback = document.getElementById(`feedback${questionIndex}`);
+            feedback.style.display = 'block';
+            if (isCorrect) {
+                feedback.className = 'feedback correct';
+                feedback.textContent = '¡Correcto! ✅';
+                score++;
+            } else {
+                feedback.className = 'feedback incorrect';
+                feedback.textContent = `❌ Incorrecto. La respuesta correcta es: ${question.options[question.correct]}`;
+            }
+            
+            updateScore();
+            updateProgress();
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+
+        function updateProgress() {
+            const answered = currentAnswers.filter(a => a !== -1).length;
+            const progress = (answered / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+        }
+
+        function resetQuiz() {
+            currentAnswers = new Array(questions.length).fill(-1);
+            score = 0;
+            updateScore();
+            updateProgress();
+            renderQuiz();
+        }
+
+        // Inicializar el quiz
+        renderQuiz();
+    </script>
+</body>
+</html>
